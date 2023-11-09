@@ -70,7 +70,7 @@ public class app {
 	 *  
 	 *  Otherwise, you will need to provide an absolute path from your C: drive or a relative path from the folder this class is in.
 	 */
-	private static String DATABASE = "projectDB.db";
+	private static String DATABASE = "projectDB2.db";
 	
 	
 	/**
@@ -181,6 +181,68 @@ public class app {
     		
         	wordScanner.close();
         	intScanner.close();
+    		
+    	} catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    public static void addEquipment(Connection conn) {
+    	try {
+    		
+    		Date arrivalDate = new Date(2023-11-9);
+    		Date warrExpDate = new Date(2025-1-1);
+    		double Height = 1.0;
+    		double Width = 1.0;
+    		double Length = 10.0;
+    		double Weight = 5.0;
+    		
+    		
+    		String sql = "INSERT INTO STOCK (arrivalDate,warrExpDate,SerialNum,Year,";
+    		sql+= "equipType,currentLoc,Height,Width,Length,Weight,Warehouse,Manufacturer,orderNum)";
+    		sql += "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    		
+    		PreparedStatement equipment = conn.prepareStatement(sql);
+    		
+    		equipment.setDate(1,  arrivalDate);
+    		equipment.setDate(2, warrExpDate);
+    		
+    		Scanner in = new Scanner(System.in);
+    		System.out.print("Serial Number (8 characters): ");
+    		String SerialNum = in.nextLine();
+    		
+    		System.out.print("\nYear: ");
+    		String Year = in.nextLine();
+    		
+    		System.out.print("\nEquipment Type (up to 50 characters): ");
+    		String equipType = in.nextLine();
+    		
+    		System.out.print("\nCurrent Location (up to 50 characters): ");
+    		String currentLoc = in.nextLine();
+    		
+    		System.out.print("\nWarehouse (up to 50 characters): ");
+    		String Warehouse = in.nextLine();
+    		
+    		System.out.print("\nManufacturer (up to 50 characters): ");
+    		String Manufacturer = in.nextLine();
+    		
+    		System.out.print("\nOrder Number: ");
+    		int orderNum = in.nextInt();
+    		
+    		equipment.setString(3,  SerialNum);
+    		equipment.setString(4, Year);
+    		equipment.setString(5, equipType);
+    		equipment.setString(6, currentLoc);
+    		
+    		equipment.setDouble(7, Height);
+    		equipment.setDouble(8, Width);
+    		equipment.setDouble(9, Length);
+    		equipment.setDouble(10, Weight);
+    		
+    		equipment.setString(11, Warehouse);
+    		equipment.setString(12, Manufacturer);
+    		
+    		equipment.setInt(13, orderNum);
     		
     	} catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -320,9 +382,9 @@ public class app {
         if (userOption.equals("1")) {
             System.out.println("What relation would you like to add a record to?");
             System.out.println();
-            System.out.println("1 - WAREHOUSE");
+            System.out.println("1 - EQUIPMENT");
             System.out.println("2 - MEMBER");
-            System.out.println("3 - REVIEW");
+            System.out.println("3 - DRONE");
             System.out.println();
             System.out.println("Enter a valid option (1/2/3): ");
             String userOption2 = in.nextLine();
@@ -438,7 +500,7 @@ public class app {
                     System.out.println(
                             "Enter the warehouse name of the record you'd like to edit: ");
                     String warehouseName = in.nextLine();
-                    for (Warehouse warehouse : warehouses) {
+                    for (Warehouse warehouse : Warehouses) {
                         if (warehouse.address.equals(warehouseName)) {
                             warehouses.remove(warehouse);
                             System.out.println("The record has been deleted.");
