@@ -1,3 +1,4 @@
+package project;
 
 public class Stock {
     private int modelNum;

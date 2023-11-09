@@ -1,3 +1,4 @@
+package project;
 public class Warehouse {
     public String address;
     public String city;

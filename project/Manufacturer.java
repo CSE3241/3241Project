@@ -1,3 +1,4 @@
+package project;
 
 public class Manufacturer {
     private String name;

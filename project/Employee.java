@@ -1,3 +1,4 @@
+package project;
 
 public class Employee {
     private int ssn;

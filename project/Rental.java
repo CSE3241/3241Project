@@ -1,3 +1,4 @@
+package project;
 
 public class Rental {
     private int rentalNum;
