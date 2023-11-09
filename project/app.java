@@ -120,6 +120,8 @@ public class app {
     		sql += "empID,dropDrone,pickUpDrone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     		PreparedStatement rental = conn.prepareStatement(sql);
     		
+    		
+    		
     		Scanner intScanner = new Scanner(System.in);
     		Scanner wordScanner = new Scanner(System.in);
     		System.out.println("Rental Number: ");
@@ -159,6 +161,7 @@ public class app {
     		rental.setString(8, dropDrone);
     		rental.setString(9, pickUpDrone);
     		
+    		
     		ResultSet rs = rental.executeQuery();
         	ResultSetMetaData rsmd = rs.getMetaData();
         	int columnCount = rsmd.getColumnCount();
@@ -176,8 +179,8 @@ public class app {
     			System.out.print("\n");
         	}
     		
-    		intScanner.close();
-    		wordScanner.close();
+        	wordScanner.close();
+        	intScanner.close();
     		
     	} catch (SQLException e) {
             System.out.println(e.getMessage());
