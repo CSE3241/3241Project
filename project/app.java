@@ -70,7 +70,7 @@ public class app {
 	 *  
 	 *  Otherwise, you will need to provide an absolute path from your C: drive or a relative path from the folder this class is in.
 	 */
-	private static String DATABASE = "projectDB2.db";
+	private static String DATABASE = "projectDB3.db";
 	
 	
 	/**
@@ -249,6 +249,161 @@ public class app {
         }
     }
     
+    public static void addMember(Connection conn) {
+    	try {
+    		Scanner in = new Scanner(System.in);
+    		
+    		String sql = "";
+    		
+    		PreparedStatement member = conn.prepareStatement(sql);
+    		
+    		System.out.println("Enter the userID of the record: ");
+            String userID = in.nextLine();
+            System.out.println("Enter the community of the record: ");
+            String community = in.nextLine();
+            System.out.println("Enter the status of the record: ");
+            String status = in.nextLine();
+            System.out.println("Enter the FName of the record: ");
+            String fName = in.nextLine();
+            System.out.println("Enter the LName of the record: ");
+            String lName = in.nextLine();
+            System.out.println("Enter the warehouseDist of the record: ");
+            String warehouseDist = in.nextLine();
+            System.out.println("Enter the phoneNum of the record: ");
+            String phoneNum = in.nextLine();
+            System.out.println("Enter the address of the record: ");
+            String address = in.nextLine();
+            System.out.println("Enter the email of the record: ");
+            String email = in.nextLine();
+            System.out.println("Enter the startDate of the record: ");
+            String startDate = in.nextLine();
+
+            String memberEntry = memberEntryBuild(userID, community, status, fName, lName,
+                    warehouseDist, phoneNum, address, email, startDate);
+            insertStatement(conn, memberEntry);
+            
+            in.close();
+            
+    	} catch (SQLException e) {
+    		System.out.println(e.getMessage());
+    	}
+    }
+    
+    public static void addDrone(Connection conn) {
+    	try {
+    		String sql = "";
+    		PreparedStatement drone = conn.prepareStatement(sql);
+    		
+    		
+    		
+    	} catch (SQLException e) {
+    		System.out.println(e.getMessage());
+    	}
+    }
+    
+    public static void editEquipment(Connection conn) {
+    	try {
+    		String sql = "";
+    		PreparedStatement equipment = conn.prepareStatement(sql);
+    		
+    		
+    		
+    	} catch (SQLException e) {
+    		System.out.println(e.getMessage());
+    	}
+    }
+    
+    public static void deleteEquipment(Connection conn) {
+    	try {
+    		String sql = "";
+    		PreparedStatement equipment = conn.prepareStatement(sql);
+    		
+    		
+    		
+    	} catch (SQLException e) {
+    		System.out.println(e.getMessage());
+    	}
+    }
+    
+    public static void editMember(Connection conn) {
+    	try {
+    		String sql = "";
+    		PreparedStatement member = conn.prepareStatement(sql);
+    		
+    		Scanner in = new Scanner(System.in);
+    		
+    		System.out.println(
+                    "Enter the memberID of the record you'd like to edit: ");
+            int memberID = in.nextInt();
+                    System.out.println(
+                            "Enter the corresponding number for the attribute you"
+                                    + " would like to update.");
+                    System.out.println("1 - userID");
+                    System.out.println("2 - community");
+                    System.out.println("3 - status");
+                    System.out.println("4 - FName");
+                    System.out.println("5 - LName");
+                    System.out.println("6 - warehouseDist");
+                    System.out.println("7 - phoneNum");
+                    System.out.println("8 - address");
+                    System.out.println("9 - email");
+                    System.out.println("10 - startDate");
+                    int attOption = in.nextInt();
+                    System.out.println(
+                            "What would you like to change the value to?");
+                    String valChange = in.nextLine();
+                    
+                    
+                    System.out.println("The record has been updated.");
+            
+    		
+    		
+    	} catch (SQLException e) {
+    		System.out.println(e.getMessage());
+    	}
+    }
+    
+    public static void deleteMember(Connection conn) {
+    	try {
+    		String sql = "";
+    		PreparedStatement member = conn.prepareStatement(sql);
+    		
+    		
+    		
+    	} catch (SQLException e) {
+    		System.out.println(e.getMessage());
+    	}
+    }
+    
+    public static void editDrone(Connection conn) {
+    	try {
+    		String sql = "";
+    		PreparedStatement drone = conn.prepareStatement(sql);
+    		
+    		
+    		
+    	} catch (SQLException e) {
+    		System.out.println(e.getMessage());
+    	}
+    }
+    
+    public static void deleteDrone(Connection conn) {
+    	try {
+    		String sql = "";
+    		PreparedStatement drone = conn.prepareStatement(sql);
+    		
+    		
+    		
+    	} catch (SQLException e) {
+    		System.out.println(e.getMessage());
+    	}
+    }
+    
+    
+    
+    
+    
+    
     /**
      * Queries the database and prints the results.
      * 
@@ -373,13 +528,13 @@ public class app {
         // get and read prompt
 
         System.out.print("Enter a valid option (1/2/3/4): ");
-        String userOption = in.nextLine();
+        int whichFunction = in.nextInt();
         System.out.println();
         
      // check the option and then ask what relation they would like to update,
         // based on first option
 
-        if (userOption.equals("1")) {
+        if (whichFunction == 1) {
             System.out.println("What relation would you like to add a record to?");
             System.out.println();
             System.out.println("1 - EQUIPMENT");
@@ -387,100 +542,32 @@ public class app {
             System.out.println("3 - DRONE");
             System.out.println();
             System.out.println("Enter a valid option (1/2/3): ");
-            String userOption2 = in.nextLine();
+            int whichEntity = in.nextInt();
             System.out.println();
 
-            // ask user for record information
 
-            if (userOption2.equals("1")) {
-                System.out.println("Enter the address of the record: ");
-                String address = in.nextLine();
-                System.out.println("Enter the city of the record: ");
-                String city = in.nextLine();
-                System.out.println("Enter the phone number of the record: ");
-                String phoneNum = in.nextLine();
-                System.out.println("Enter the  manager's name of the record: ");
-                String managerName = in.nextLine();
-                System.out.println("Enter the storage capacity of the record: ");
-                String storageCap = in.nextLine();
-                System.out.println("Enter the drone capacity of the record: ");
-                String droneCap = in.nextLine();
-
-                //Create the string for the insert query
-                String warehouseEntry=warehouseEntryBuild(address, city, phoneNum, managerName, storageCap, droneCap);
-                
-                
-                //Run insertion
-                insertStatement(conn,warehouseEntry);
-                
-                
-                
-                //warehouses.add(new Warehouse(address, city, phoneNum,
-                        //managerName, storageCap, droneCap));
-                //System.out.println("The record has been added.");
-
+            if (whichEntity == 1) {
+                addEquipment(conn);
+            } else if (whichEntity == 2) {
+                addMember(conn);
+            } else if (whichEntity == 3) {
+                addDrone(conn);
+            } else {
+            	System.out.println("Invalid option entered");
             }
+            
+        } else if (whichFunction == 2) {
 
-            // same process for other relations
-
-            else if (userOption2.equals("2")) {
-                System.out.println("Enter the userID of the record: ");
-                String userID = in.nextLine();
-                System.out.println("Enter the community of the record: ");
-                String community = in.nextLine();
-                System.out.println("Enter the status of the record: ");
-                String status = in.nextLine();
-                System.out.println("Enter the FName of the record: ");
-                String fName = in.nextLine();
-                System.out.println("Enter the LName of the record: ");
-                String lName = in.nextLine();
-                System.out.println("Enter the warehouseDist of the record: ");
-                String warehouseDist = in.nextLine();
-                System.out.println("Enter the phoneNum of the record: ");
-                String phoneNum = in.nextLine();
-                System.out.println("Enter the address of the record: ");
-                String address = in.nextLine();
-                System.out.println("Enter the email of the record: ");
-                String email = in.nextLine();
-                System.out.println("Enter the startDate of the record: ");
-                String startDate = in.nextLine();
-
-                String memberEntry = memberEntryBuild(userID, community, status, fName, lName,
-                        warehouseDist, phoneNum, address, email, startDate);
-                insertStatement(conn, memberEntry);
-                //System.out.println("The record has been added.");
-
-            } else if (userOption2.equals("3")) {
-                System.out.println("Enter the rating of the record: ");
-                String rating = in.nextLine();
-                System.out.println("Enter the comments of the record: ");
-                String comments = in.nextLine();
-                System.out.println("Enter the userID of the record: ");
-                String userID = in.nextLine();
-                System.out.println("Enter the rental number of the record: ");
-                String rentalNum = in.nextLine();
-                System.out.println("Enter the rental number of the record: ");
-                String rentalDate = in.nextLine();
-
-                String reviewEntry = reviewEntryBuild(rating, comments, userID, rentalNum, rentalDate);
-                insertStatement(conn, reviewEntry);
-                
-                
-                
-            }
-        } else if (userOption.equals("2")) {
-
-            // ask what relation
 
             System.out.println(
-                    "What relation would you like to edit or delete a record?");
+                    "Which relation would you like to edit or delete a record?");
             System.out.println();
             System.out.println("1 - WAREHOUSE");
             System.out.println("2 - MEMBER");
             System.out.println("3 - REVIEW");
             System.out.println();
             System.out.print("Enter a valid option (1/2/3): ");
-            String userOption2 = in.nextLine();
+            int whichEntity = in.nextInt();
 
             System.out.println();
 
@@ -490,131 +577,67 @@ public class app {
             System.out.println("1 - editing");
             System.out.println("2 - deleting");
             System.out.print("Enter a valid option (1/2): ");
-            String editOrDelete = in.nextLine();
+            int editOrDelete = in.nextInt();
 
-            // if delete, delete from proper relation
-            // exception will be thrown because removing in iteration
 
-            if (editOrDelete.equals("2")) {
-                if (userOption2.equals("1")) {
-                    System.out.println(
-                            "Enter the warehouse name of the record you'd like to edit: ");
-                    String warehouseName = in.nextLine();
-                    for (Warehouse warehouse : Warehouses) {
-                        if (warehouse.address.equals(warehouseName)) {
-                            warehouses.remove(warehouse);
-                            System.out.println("The record has been deleted.");
-
-                        }
-                    }
-                } else if (userOption2.equals("2")) {
-                    System.out.println(
-                            "Enter the memberID of the record you'd like to edit: ");
-                    int memberID = in.nextInt();
-                    for (Member member : members) {
-                        if (member.userID == memberID) {
-                            members.remove(member);
-                            System.out.println("The record has been deleted.");
-                        }
-                    }
-                } else if (userOption2.equals("3")) {
-                    System.out.println(
-                            "Enter the rental number of the record you'd like to edit: ");
-                    int rentalNum = in.nextInt();
-                    for (Review review : reviews) {
-                        if (review.rentalNum == rentalNum) {
-                            reviews.remove(review);
-                            System.out.println("The record has been deleted.");
-                        }
-                    }
-                }
-
-            }
-
+            //Equipment
+            if(whichEntity == 1) {
+            	//edit
+            	if(editOrDelete == 1) {
+            		editEquipment(conn);
+            	} 
+            	//delete
+            	else if (editOrDelete == 2) {
+            		deleteEquipment(conn);
+            	}
+            	//invalid input
+            	else {
+            		System.out.println("Invalid option selected for Edit or Delete.");
+            	}
+            	
+            } 
+            //Member
+            else if(whichEntity == 2) {
+            	//edit
+            	if(editOrDelete == 1) {
+            		editMember(conn);
+            	} 
+            	//delete
+            	else if (editOrDelete == 2) {
+            		deleteMember(conn);
+            	}
+            	//invalid input
+            	else {
+            		System.out.println("Invalid option selected for Edit or Delete.");
+            	}
+            } 
+            //Drone
+            else if (whichEntity == 3){
+            	//edit
+            	if(editOrDelete == 1) {
+            		editDrone(conn);
+            	} 
+            	//delete
+            	else if (editOrDelete == 2) {
+            		deleteDrone(conn);
+            	}
+            	//invalid input
+            	else {
+            		System.out.println("Invalid option selected for Edit or Delete.");
+            	}
+            } 
+            //Invalid input
             else {
-
-                // edit attribute according to input, do the same for other relations
-
-                if (userOption2.equals("1")) {
-                    System.out.println(
-                            "Enter the warehouse name of the record you'd like to edit: ");
-                    String warehouseName = in.nextLine();
-                    for (Warehouse warehouse : warehouses) {
-                        if (warehouse.address.equals(warehouseName)) {
-                            System.out.println(
-                                    "Enter the corresponding number for the attribute you"
-                                            + " would like to update.");
-                            System.out.println("1 - address");
-                            System.out.println("2 - city");
-                            System.out.println("3 - phoneNum");
-                            System.out.println("4 - MGRName");
-                            System.out.println("5 - storageCap");
-                            System.out.println("6 - droneCap");
-                            int attOption = in.nextInt();
-                            System.out.println(
-                                    "What would you like to change the value to?");
-                            String valChange = in.nextLine();
-                            editWarehouse(warehouse, valChange, attOption);
-                            System.out.println("The record has been updated.");
-
-                        }
-                    }
-                } else if (userOption2.equals("2")) {
-                    System.out.println(
-                            "Enter the memberID of the record you'd like to edit: ");
-                    int memberID = in.nextInt();
-                    for (Member member : members) {
-                        if (member.userID == memberID) {
-                            System.out.println(
-                                    "Enter the corresponding number for the attribute you"
-                                            + " would like to update.");
-                            System.out.println("1 - userID");
-                            System.out.println("2 - community");
-                            System.out.println("3 - status");
-                            System.out.println("4 - FName");
-                            System.out.println("5 - LName");
-                            System.out.println("6 - warehouseDist");
-                            System.out.println("7 - phoneNum");
-                            System.out.println("8 - address");
-                            System.out.println("9 - email");
-                            System.out.println("10 - startDate");
-                            int attOption = in.nextInt();
-                            System.out.println(
-                                    "What would you like to change the value to?");
-                            String valChange = in.nextLine();
-                            editMember(member, valChange, attOption);
-                            System.out.println("The record has been updated.");
-                        }
-                    }
-                } else if (userOption2.equals("3")) {
-                    System.out.println(
-                            "Enter the rental number of the record you'd like to edit: ");
-                    int rentalNum = in.nextInt();
-                    for (Review review : reviews) {
-                        if (review.rentalNum == rentalNum) {
-                            System.out.println(
-                                    "Enter the corresponding number for the attribute you"
-                                            + " would like to update.");
-                            System.out.println("1 - rating");
-                            System.out.println("2 - comments");
-                            System.out.println("3 - userID");
-                            System.out.println("4 - rentalNum");
-                            int attOption = in.nextInt();
-                            System.out.println(
-                                    "What would you like to change the value to?");
-                            String valChange = in.nextLine();
-                            editReview(review, valChange, attOption);
-                            System.out.println("The record has been updated.");
-                        }
-                    }
-                }
+            	System.out.println("Invalid selction for Entity.");
             }
         }
+
+                
 
         // if user picked to search, determine what relation and then display all
         // records in specified relation
 
-        else if (userOption.equals("3")) {
+        else if (whichFunction == 3) {
             System.out.println("What relation would you like to search records in?");
             System.out.println();
             System.out.println("1 - WAREHOUSE");
@@ -622,31 +645,21 @@ public class app {
             System.out.println("3 - REVIEW");
             System.out.println();
             System.out.print("Enter a valid option (1/2/3): ");
-            userOption = in.nextLine();
+            int whichEntity = in.nextInt();
             System.out.println();
 
-            if (userOption.equals("1")) {
-                System.out.println(
-                        "Address, city, phoneNum, MGRName, storageCap, droneCap");
-                for (Warehouse w : warehouses) {
-                    displayWarehouse(w);
-
-                }
-            }
-            if (userOption.equals("2")) {
-                System.out.println(
-                        "UserID, community, status, FName, LName, warehouseDist, phoneNum, address, email, startDate");
-                for (Member m : members) {
-                    displayMember(m);
-
-                }
-            }
-            if (userOption.equals("3")) {
-                System.out.println("Rating, Comments, UserID, RentalID");
-                for (Review r : reviews) {
-                    displayReview(r);
-
-                }
+            //Equipment
+            if(whichEntity == 1) {
+            	
+            	
+            } 
+            //Member
+            else if(whichEntity == 2) {
+            	
+            } 
+            //Drone
+            else if (whichEntity == 3){
+            	
             }
 
         }
