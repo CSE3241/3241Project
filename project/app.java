@@ -72,15 +72,6 @@ public class app {
 	 */
 	private static String DATABASE = "projectDB3.db";
 	
-	
-	/**
-	 *  The query statement to be executed.
-	 *  
-	 *  Remember to include the semicolon at the end of the statement string.
-	 *  (Not all programming languages and/or packages require the semicolon (e.g., Python's SQLite3 library))
-	 */
-	private static String sqlStatement = "SELECT * FROM Employee;";
-	
     /**
      * Connects to the database if it exists, creates it if it does not, and returns the connection object.
      * 
@@ -113,6 +104,8 @@ public class app {
         }
         return conn;
     }
+    
+    /** Here begins the methods we wrote for the checkpoint **/
     
     public static void addRental(Connection conn) {
     	try {
@@ -244,6 +237,8 @@ public class app {
     		
     		equipment.setInt(13, orderNum);
     		
+    		in.close();
+    		
     	} catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -278,9 +273,9 @@ public class app {
             System.out.println("Enter the startDate of the record: ");
             String startDate = in.nextLine();
 
-            String memberEntry = memberEntryBuild(userID, community, status, fName, lName,
-                    warehouseDist, phoneNum, address, email, startDate);
-            insertStatement(conn, memberEntry);
+            //String memberEntry = memberEntryBuild(userID, community, status, fName, lName,
+                 //   warehouseDist, phoneNum, address, email, startDate);
+           // insertStatement(conn, memberEntry);
             
             in.close();
             
@@ -294,7 +289,10 @@ public class app {
     		String sql = "";
     		PreparedStatement drone = conn.prepareStatement(sql);
     		
+    		Scanner in = new Scanner(System.in);
     		
+    		
+    		in.close();
     		
     	} catch (SQLException e) {
     		System.out.println(e.getMessage());
@@ -305,7 +303,10 @@ public class app {
     	try {
     		String sql = "";
     		PreparedStatement equipment = conn.prepareStatement(sql);
+    		Scanner in = new Scanner(System.in);
     		
+    		
+    		in.close();
     		
     		
     	} catch (SQLException e) {
@@ -318,6 +319,10 @@ public class app {
     		String sql = "";
     		PreparedStatement equipment = conn.prepareStatement(sql);
     		
+    		Scanner in = new Scanner(System.in);
+    		
+    		
+    		in.close();
     		
     		
     	} catch (SQLException e) {
@@ -356,7 +361,7 @@ public class app {
                     
                     System.out.println("The record has been updated.");
             
-    		
+            		in.close();
     		
     	} catch (SQLException e) {
     		System.out.println(e.getMessage());
@@ -367,7 +372,10 @@ public class app {
     	try {
     		String sql = "";
     		PreparedStatement member = conn.prepareStatement(sql);
+    		Scanner in = new Scanner(System.in);
     		
+    		
+    		in.close();
     		
     		
     	} catch (SQLException e) {
@@ -379,7 +387,10 @@ public class app {
     	try {
     		String sql = "";
     		PreparedStatement drone = conn.prepareStatement(sql);
+    		Scanner in = new Scanner(System.in);
     		
+    		
+    		in.close();
     		
     		
     	} catch (SQLException e) {
@@ -391,7 +402,10 @@ public class app {
     	try {
     		String sql = "";
     		PreparedStatement drone = conn.prepareStatement(sql);
+    		Scanner in = new Scanner(System.in);
     		
+    		
+    		in.close();
     		
     		
     	} catch (SQLException e) {
@@ -399,46 +413,16 @@ public class app {
     	}
     }
     
-    
-    
-    
-    
+    /**Example from in-class lab**/
     
     /**
      * Queries the database and prints the results.
      * 
      * @param conn a connection object
      * @param sql a SQL statement that returns rows
-     * This query is written with the Statement class, tipically 
+     * This query is written with the Statement class, typically  
      * used for static SQL SELECT statements
      */
-    public static void lindseyQuery(Connection conn, String sql){
-        try {
-        	PreparedStatement state = conn.prepareStatement(sql);
-        	state.setString(1, "Packer");
-        	state.setString(2,  "123 Main St");
-        			
-        	ResultSet rs = state.executeQuery();
-        	ResultSetMetaData rsmd = rs.getMetaData();
-        	int columnCount = rsmd.getColumnCount();
-        	for (int i = 1; i <= columnCount; i++) {
-        		String value = rsmd.getColumnName(i);
-        		System.out.print(value);
-        		if (i < columnCount) System.out.print(",  ");
-        	}
-			System.out.print("\n");
-        	while (rs.next()) {
-        		for (int i = 1; i <= columnCount; i++) {
-        			String columnValue = rs.getString(i);
-            		System.out.print(columnValue);
-            		if (i < columnCount) System.out.print(",  ");
-        		}
-    			System.out.print("\n");
-        	}
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
     
     public static void sqlQuery(Connection conn, String sql){
         try {
@@ -480,41 +464,12 @@ public class app {
     }
     
     
-    
-    
-    
-    //Builds insert query string for warehouse
-    public static String warehouseEntryBuild(String address, String city, String phoneNo, String mgrName, String storageCap, String droneCap) 
-    {
-    	String values = address+","+city+","+phoneNo+","+mgrName+","+storageCap+","+droneCap;
-    	String insertStatement = "INSERT INTO WAREHOUSE (Address, City, PhoneNum, MGRName, StorageCap, DroneCap) Values ("+values+");";
-    	return insertStatement;
-    }
-    
-  //Builds insert query string for review
-    public static String reviewEntryBuild(String rating, String comments, String userID, String rentalNum, String date) 
-    {
-    	String values = userID+","+rating+","+comments+","+userID+","+rentalNum+","+date;
-    	String insertStatement = "INSERT INTO review (Rating, Comments, userID, RentalNum, Date) Values ("+values+");";
-    	return insertStatement;
-    }
-    
-  //Builds insert query string for member
-    public static String memberEntryBuild(String userID, String Community, String Status, String Fname, String Lname, String warehouseDist, String phoneNum, String Address, String Email, String startDate) 
-    {
-    	String values = userID+","+Community+","+Status+","+Fname+","+Lname+","+warehouseDist+","+phoneNum+","+Address+","+Email+","+startDate;
-    	String insertStatement = "INSERT INTO MEMBER (userID, Community, Status, Fname, Lname, warehouseDist, pphoneNum, Address, Email, startDate) Values ("+values+");";
-    	return insertStatement;
-    }
-    
     public static void main(String[] args) {
     	System.out.println("This is a new run");
     	Connection conn = initializeDB(DATABASE);  	
     	Scanner in = new Scanner(System.in);
     	
     	
-    	    	
-    	// welcome user and ask what they would like to do
         System.out.println("Welcome to the homepage for the database system. Please "
                 + "read the commands and enter what you would like to do.");
         System.out.println();
@@ -525,15 +480,14 @@ public class app {
         System.out.println("4 - Find Useful Reports");
         System.out.println();
 
-        // get and read prompt
+        
 
         System.out.print("Enter a valid option (1/2/3/4): ");
         int whichFunction = in.nextInt();
         System.out.println();
         
-     // check the option and then ask what relation they would like to update,
-        // based on first option
-
+        
+        //add new record
         if (whichFunction == 1) {
             System.out.println("What relation would you like to add a record to?");
             System.out.println();
@@ -545,20 +499,27 @@ public class app {
             int whichEntity = in.nextInt();
             System.out.println();
 
-
+            //equipment
             if (whichEntity == 1) {
                 addEquipment(conn);
-            } else if (whichEntity == 2) {
+            } 
+            //member
+            else if (whichEntity == 2) {
                 addMember(conn);
-            } else if (whichEntity == 3) {
+            } 
+            //drone
+            else if (whichEntity == 3) {
                 addDrone(conn);
-            } else {
+            } 
+            //invalid input
+            else {
             	System.out.println("Invalid option entered");
             }
             
-        } else if (whichFunction == 2) {
-
-
+        } 
+        
+        //edit or delete
+        else if (whichFunction == 2) {
             System.out.println(
                     "Which relation would you like to edit or delete a record?");
             System.out.println();
@@ -571,14 +532,12 @@ public class app {
 
             System.out.println();
 
-            // ask if editing or deleting
 
             System.out.println("Are you editing or deleting a record?");
             System.out.println("1 - editing");
             System.out.println("2 - deleting");
             System.out.print("Enter a valid option (1/2): ");
             int editOrDelete = in.nextInt();
-
 
             //Equipment
             if(whichEntity == 1) {
@@ -596,6 +555,7 @@ public class app {
             	}
             	
             } 
+            
             //Member
             else if(whichEntity == 2) {
             	//edit
@@ -611,6 +571,7 @@ public class app {
             		System.out.println("Invalid option selected for Edit or Delete.");
             	}
             } 
+            
             //Drone
             else if (whichEntity == 3){
             	//edit
@@ -626,17 +587,15 @@ public class app {
             		System.out.println("Invalid option selected for Edit or Delete.");
             	}
             } 
-            //Invalid input
+            
+            //Invalid input to entity type
             else {
             	System.out.println("Invalid selction for Entity.");
             }
         }
 
                 
-
-        // if user picked to search, determine what relation and then display all
-        // records in specified relation
-
+        //search records
         else if (whichFunction == 3) {
             System.out.println("What relation would you like to search records in?");
             System.out.println();
@@ -661,7 +620,22 @@ public class app {
             else if (whichEntity == 3){
             	
             }
+            //invalid option
+            else {
+            	System.out.println("Invalid entity selection.");
+            }
 
+        }
+        
+        //useful reports
+        else if (whichFunction == 4) {
+        	
+        	
+        }
+        
+        //invalid option for which function
+        else {
+        	System.out.println("Invalid input for function to be executed.");
         }
     }
 
@@ -769,46 +743,11 @@ public class app {
         System.out.print(w.getDroneCap() + " ");
         System.out.println();
 
-    }}
+    }
+}
 
-
-        
-        
-        
-        
-        
-
-        // check the option and then ask what relation they would like to update,
-        // based on first option
-         
-         
-         
-         
     	
-    	/*String select = "SELECT Name FROM Employee WHERE jobTitle = ? AND Warehouse = ?";
-    	
-    	
-    	System.out.println("\nPick a query");
-    	System.out.println("1. Print the entire Employee table.");
-    	System.out.println("2. Select the name of an employee based on jobTitle = packer and Warehouse = 123 Main St.");
-    	System.out.println("3. Add Rental to Database");
-    	Scanner scan = new Scanner(System.in);
-    	int choice = scan.nextInt();
-    	if(choice == 1) {
-    		sqlQuery(conn, sqlStatement);
-    	} else if (choice == 2){
-    		lindseyQuery(conn, select);
-    	} else if (choice == 3) {
-    		addRental(conn);
-    	}*/
-    	
-    	
-    	//System.out.println("*********************************************************************");
-    	//System.out.println("Part 6 - Add other queries - Use PreparedStatements");
-    	
-    	
-    	
-    	
+	/** from lab example **/
     	/* finally best approach
 		finally{
 		   
