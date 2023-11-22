@@ -42,13 +42,18 @@ public class FinalProject{
 		//initialize the database
 		Connection conn = initializeDB(DATABASE);  
 		
+		int selection = 0;
+		Scanner scan = new Scanner(System.in);
+		while (selection != 6) {
 		System.out.println("Please select from the following options: ");
 		System.out.println("1 - Enter equipment rental");
 		System.out.println("2 - Enter equipment return");
 		System.out.println("3 - Deliver rental");
 		System.out.println("4 - Pickup return");
-		Scanner scan = new Scanner(System.in);
-		int selection = scan.nextInt();
+		System.out.println("5 - Add/Modify/Remove/Retrieve Equipment");
+		System.out.println("6 - Exit program");
+		
+		selection = scan.nextInt();
 		
 		
 		//rent equipment
@@ -74,6 +79,39 @@ public class FinalProject{
 		//pickup
 		else if (selection == 4) {
 			pickup(conn,scan);
+		} 
+		//modify equipment
+		else if (selection == 5) {
+			System.out.println("Would you like to :");
+			System.out.println("1 - ADD EQUIPMENT");
+			System.out.println("2 - MODIFY EQUIPMENT");
+			System.out.println("3 - REMOVE EQUIPMENT");
+			System.out.println("4 - RETRIEVE EQUIPMENT");
+			int choice = scan.nextInt();
+			
+			System.out.println("Would you like to view all equipment?");
+			System.out.println("1 - YES");
+			System.out.println("2 - NO");
+			int viewAll = scan.nextInt();
+			if(viewAll == 1) {
+				showAll(conn);
+			}
+			
+			if(choice == 1) {
+				add(conn,scan);
+			} else if (choice == 2) {
+				modify(conn,scan);
+			} else if (choice == 3) {
+				delete(conn,scan);
+			} else if (choice == 4) {
+				get(conn,scan);
+			} else {
+				System.out.println("Invalid selection.");
+			}
+			
+		}
+		else if(selection == 6) {
+			System.out.println("Goodbye!");
 		}
 		
 		//did not select one of the options
@@ -81,12 +119,214 @@ public class FinalProject{
 			System.out.println("Invalid selection.");
 		}
 		
+		}
+		scan.close();
 		try {
 			conn.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		scan.close();
+		
+	}
+	
+	public static void get(Connection conn, Scanner scan) {
+		try {
+			
+			
+			System.out.println("Would you like to search with a select (rows) or a project (columns) operation?");
+			System.out.println("1 - SELECT");
+			System.out.println("2 - PROJECT");
+			
+			int op = scan.nextInt();
+			String eatLine = scan.nextLine();
+			
+			ResultSet rs;
+			if(op == 1) {
+				System.out.println("Which item would like to select? Enter serial number: ");
+				String select = "SELECT * FROM Stock WHERE SerialNum = ?";
+				PreparedStatement prep = conn.prepareStatement(select);
+				prep.setString(1, scan.nextLine());
+				 rs = prep.executeQuery();
+			} else {
+				System.out.println("Which attribute would you like to project? Enter column name: ");
+				String select = "SELECT ? FROM Stock";
+				PreparedStatement prep = conn.prepareStatement(select);
+				prep.setString(1, scan.nextLine());
+				 rs = prep.executeQuery();
+			}
+			
+			ResultSetMetaData rsmd = rs.getMetaData();
+        	int columnCount = rsmd.getColumnCount();
+        	for (int i = 1; i <= columnCount; i++) {
+        		String value = rsmd.getColumnName(i);
+        		System.out.print(value);
+        		if (i < columnCount) System.out.print(",  ");
+        	}
+			System.out.print("\n");
+        	while (rs.next()) {
+        		for (int i = 1; i <= columnCount; i++) {
+        			String columnValue = rs.getString(i);
+            		System.out.print(columnValue);
+            		if (i < columnCount) System.out.print(",  ");
+        		}
+    			System.out.print("\n");
+        	}
+			
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+	
+	}
+	
+	public static void modify(Connection conn, Scanner scan) {
+		try {
+			String eatNewLine = scan.nextLine();
+			
+			String change = "UPDATE Stock SET Description = ? WHERE serialNum = ?;";
+			PreparedStatement changeStmt = conn.prepareStatement(change);
+			
+			System.out.println("Which item would you like to modify? Enter serial number: ");
+			String serialNum = scan.nextLine();
+			changeStmt.setString(2, serialNum);
+			
+			
+			System.out.println("What would you like to change the description to? Enter here: ");
+			
+			String eatNewLine2 = scan.nextLine();
+			changeStmt.setString(1, scan.nextLine());
+			
+			
+			int result = changeStmt.executeUpdate();
+			
+			if(result == 1) {
+				System.out.println("Item successfully modified.");
+			} else {
+				System.out.println("Error modifying item");
+			}
+			
+			
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	public static void add(Connection conn, Scanner scan) {
+		
+		try {
+			
+		
+			String addString = "INSERT INTO Stock(modelNum,Status,Description,arrivalDate,warrExpDate,SerialNum,Year,equipType,currentLoc,Height,Width,Length,Weight,Warehouse,Manufacturer,orderNum) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+		
+			PreparedStatement add = conn.prepareStatement(addString);
+			
+			String eatNewLine = scan.nextLine();
+			
+			System.out.println("modelNum (7 characters):");
+			add.setString(1, scan.nextLine());
+			
+			add.setString(2, "WAREHOUSE");
+			
+			System.out.println("Description: ");
+			add.setString(3, scan.nextLine());
+			System.out.println("arrivalDate (YYYY-MM-DD): ");
+			add.setString(4, scan.nextLine());
+			System.out.println("warrExpDate (YYYY-MM-DD): ");
+			add.setString(5, scan.nextLine());
+			System.out.println("SerialNum (8 characters): ");
+			add.setString(6, scan.nextLine());
+			System.out.println("Year (YYYY): ");
+			add.setString(7, scan.nextLine());
+			System.out.println("equipType: ");
+			add.setString(8, scan.nextLine());
+			
+			add.setString(9, "WAREHOUSE");
+			
+			System.out.println("Warehouse: ");
+			add.setString(14, scan.nextLine());
+			System.out.println("Manufacturer: ");
+			add.setString(15, scan.nextLine());
+			
+			System.out.println("Height: ");
+			add.setDouble(10, scan.nextDouble());
+			System.out.println("Width: ");
+			add.setDouble(11, scan.nextDouble());
+			System.out.println("Length: ");
+			add.setDouble(12, scan.nextDouble());
+			System.out.println("Weight: ");
+			add.setDouble(13, scan.nextDouble());
+			
+			System.out.println("orderNum: ");
+			add.setInt(16, scan.nextInt());
+			
+			int result = add.executeUpdate();
+			
+			if(result == 1) {
+				System.out.println("Item successfully added.");
+			} else {
+				System.out.println("Error adding item");
+			}
+			
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	public static void delete(Connection conn, Scanner scan) {
+		
+		try {
+			
+			String eatNewLine = scan.nextLine();
+			
+			System.out.println("Enter the serial number of the item you would like to remove: ");
+			String serialNum = scan.nextLine();
+			
+			String removeString = "DELETE FROM Stock WHERE SerialNum = ?;";
+			
+			PreparedStatement remove = conn.prepareStatement(removeString);
+			
+			remove.setString(1, serialNum);
+			
+			int removed = remove.executeUpdate();
+			
+			if(removed == 1) {
+				System.out.println("Item successfully removed.");
+			} else {
+				System.out.println("Error removing item");
+			}
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+		
+		
+		
+	}
+	
+	public static void showAll(Connection conn) {
+		try {
+			System.out.println("ALL EQUIPMENT: ");
+			String display = "SELECT SerialNum, modelNum, equipType, Description, arrivalDate, warrExpDate, Year, currentLoc, Warehouse FROM Stock;";
+			Statement sql = conn.createStatement();
+			ResultSet rs = sql.executeQuery(display);
+			ResultSetMetaData rsmd = rs.getMetaData();
+        	int columnCount = rsmd.getColumnCount();
+        	for (int i = 1; i <= columnCount; i++) {
+        		String value = rsmd.getColumnName(i);
+        		System.out.print(value);
+        		if (i < columnCount) System.out.print(",  ");
+        	}
+			System.out.print("\n");
+        	while (rs.next()) {
+        		for (int i = 1; i <= columnCount; i++) {
+        			String columnValue = rs.getString(i);
+            		System.out.print(columnValue);
+            		if (i < columnCount) System.out.print(",  ");
+        		}
+    			System.out.print("\n");
+        	}
+			
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
 	}
 	
 	public static void pickup(Connection conn, Scanner scan) {
