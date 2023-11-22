@@ -13,7 +13,7 @@ import java.util.*;
 
 public class FinalProject{
 	
-	private static String DATABASE = "finalProjectDB.db";
+	private static String DATABASE = "finalDB.db";
 	
 	 public static Connection initializeDB(String databaseFileName) {
 		 String url = "jdbc:sqlite:" + databaseFileName;
@@ -94,9 +94,9 @@ public class FinalProject{
 			
 			System.out.println("RETURNS NOT YET PICKED UP: ");
 			//show rentals that have been checked in but not picked up
-			String needDrone = "SELECT Rental.rentalNum, Rental.modelNum FROM Rental, Contains, Stock " +
-					"WHERE Rental.rentalNum = Contains.rentalNum AND Stock.serialNum = Contains.serialNum" +
-					"AND Stock.CurrentLoc = 'WAREHOUSE';";
+			String needDrone = "SELECT Rental.rentalNum, Contains.serialNum, Rental.checkOut, Rental.dueDate, Rental.userID, Rental.empID FROM Rental, Contains, Stock " +
+					"WHERE Rental.rentalNum = Contains.rentalNum AND Stock.SerialNum = Contains.serialNum" +
+					" AND Stock.Status = 'WAREHOUSE' AND Stock.currentLoc != 'WAREHOUSE' AND Rental.pickUpDrone IS NULL;";
 			Statement drones = conn.createStatement();
 			ResultSet rs = drones.executeQuery(needDrone);
 			ResultSetMetaData rsmd = rs.getMetaData();
@@ -145,18 +145,35 @@ public class FinalProject{
         	
         	String eatNewLine = scan.nextLine();
         	
-        	System.out.println("Enter the serial number of the drone to pickup the return");
+        	System.out.println("Enter the serial number of the drone to pickup the return: ");
         	String serialNum = scan.nextLine();
         	
         	//update dropDrone in Rental
         	String drone = "UPDATE Rental SET pickUpDrone = '" + serialNum + "' WHERE rentalNum = " + rentalID + ";";
         	Statement setDrone = conn.createStatement();
-        	setDrone.executeUpdate(drone);
+        	int droneResult = setDrone.executeUpdate(drone);
         	
         	//update drone's current location
         	String location = "UPDATE Drone SET CurrentLoc = 'IN FLIGHT' WHERE serialNum = '" + serialNum + "';";
-        	Statement updateLoc = conn.createStatement();
-        	updateLoc.executeUpdate(location);
+        	Statement updateDrone = conn.createStatement();
+        	int locationResult = updateDrone.executeUpdate(location);
+        	
+        	String itemsString = "SELECT Stock.SerialNum FROM Stock, Contains WHERE Stock.SerialNum = Contains.serialNum AND Contains.rentalNum = " + rentalID + ";";
+			Statement itemsStmt = conn.createStatement();
+			ResultSet numItems = itemsStmt.executeQuery(itemsString);
+			
+			int itemLocResult = 0;
+			while(numItems.next()) {
+				String currentLoc = "UPDATE Stock SET currentLoc = 'WAREHOUSE' WHERE SerialNum = '" + numItems.getString(1) + "';";
+				Statement updateLoc = conn.createStatement();
+				itemLocResult += updateLoc.executeUpdate(currentLoc);
+			}
+			
+			if(droneResult == 1 && locationResult == 1 && itemLocResult > 0) {
+				System.out.println("Return successfully picked up by drone.");
+			} else {
+				System.out.println("Possible error picking up return.");
+			}
 			
 			
 			
@@ -170,7 +187,7 @@ public class FinalProject{
 		try {
 			//show them the undelivered rentals
 			System.out.println("UNDELIVERED RENTALS: ");
-			String undelivered = "SELECT * FROM Rental WHERE dropDrone IS NULL";
+			String undelivered = "SELECT rentalNum, checkOut, dueDate, Fees, userID, empID FROM Rental WHERE dropDrone IS NULL";
 			Statement findUndelivered = conn.createStatement();
 			ResultSet rs = findUndelivered.executeQuery(undelivered);
 			
@@ -227,13 +244,41 @@ public class FinalProject{
         	//update dropDrone in Rental
         	String drone = "UPDATE Rental SET dropDrone = '" + serialNum + "' WHERE rentalNum = " + rentalID + ";";
         	Statement setDrone = conn.createStatement();
-        	setDrone.executeUpdate(drone);
+        	int droneResult = setDrone.executeUpdate(drone);
         	
         	//update drone's current location
         	String location = "UPDATE Drone SET CurrentLoc = 'IN FLIGHT' WHERE serialNum = '" + serialNum + "';";
-        	Statement updateLoc = conn.createStatement();
-        	updateLoc.executeUpdate(location);
+        	Statement updateDroneLoc = conn.createStatement();
+        	int droneLocResult = updateDroneLoc.executeUpdate(location);
+        	
+        	//finally, update currentLoc in stock to user's address
+        	String getUser = "SELECT userID FROM Rental WHERE rentalNum = " + rentalID + ";";
+        	Statement userStmt = conn.createStatement();
+        	ResultSet userResult = userStmt.executeQuery(getUser);
+        	String userID = userResult.getString(1);
+
+			String getAddress = "SELECT Address FROM Member WHERE userID = " + userID + ";";
+			Statement addressStmt = conn.createStatement();
+			ResultSet addressResult = addressStmt.executeQuery(getAddress);
+			String address = addressResult.getString(1);
 			
+			String itemsString = "SELECT Stock.SerialNum FROM Stock, Contains WHERE Stock.SerialNum = Contains.serialNum AND Contains.rentalNum = " + rentalID + ";";
+			Statement itemsStmt = conn.createStatement();
+			ResultSet numItems = itemsStmt.executeQuery(itemsString);
+			
+			int itemLocResult = 0;
+			while(numItems.next()) {
+				String currentLoc = "UPDATE Stock SET currentLoc = '" + address + "' WHERE SerialNum = '" + numItems.getString(1) + "';";
+				Statement updateLoc = conn.createStatement();
+				itemLocResult += updateLoc.executeUpdate(currentLoc);
+			}
+			
+			
+			if(droneResult == 1 && droneLocResult == 1 && itemLocResult >= 1) {
+				System.out.println("Rental was delivered to " + address +".");
+			} else {
+				System.out.println("Possible error delivering rental.");
+			}
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 		}
@@ -245,7 +290,7 @@ public class FinalProject{
 		int rentalID = scan.nextInt();
 		
 		System.out.println("Would you like to return all items in the rental, or only select items?");
-		System.out.println("1 - ALL ITEMS \n 2 - SELECT ITEMS");
+		System.out.println("1 - ALL ITEMS \n2 - SELECT ITEMS");
 		int allOrSome = scan.nextInt();
 		
 		try {
@@ -254,21 +299,29 @@ public class FinalProject{
 				selectedItems = "SELECT serialNum FROM Contains WHERE rentalNum = " + rentalID + ";";
 				Statement selectStatement = conn.createStatement();
 				ResultSet rs = selectStatement.executeQuery(selectedItems);
+				int itemsReturned = 0;
 				while (rs.next()) {
 					//get each serial num
 	        		String item = rs.getString(1);
 	        		
 	        		//set status of that item back to WAREHOUSE
-	        		String returnString = "UPDATE Stock SET Status = 'WAREHOUSE' WHERE serialNum = '" + item + "';";
+	        		String returnString = "UPDATE Stock SET Status = 'WAREHOUSE' WHERE SerialNum = '" + item + "';";
 	        		Statement returnItem = conn.createStatement();
-	        		returnItem.executeUpdate(returnString);
+	        		itemsReturned += returnItem.executeUpdate(returnString);
 	        	}
+				if(itemsReturned > 0) {
+					System.out.println(itemsReturned + " items were marked for return. A drone will soon be assigned to pick them up.");
 			
+				} else {
+					System.out.println("Possible error returning items.");
+				}
 			} else {
-				String getItems = "SELECT Item FROM Rental WHERE rentalNum = " + rentalID + ";";
+				String getItems = "SELECT Contains.rentalNum, Contains.serialNum, Rental.checkOut, Rental.dueDate, Rental.userID FROM Contains, Rental "
+						+ "WHERE Rental.rentalNum = Contains.rentalNum AND Contains.rentalNum = " + rentalID + ";";
 				Statement getItemsStmt = conn.createStatement();
 				ResultSet rs = getItemsStmt.executeQuery(getItems);
 				
+				System.out.println("ITEMS IN RENTAL: ");
 				//show the items in the rental
 				ResultSetMetaData rsmd = rs.getMetaData();
 	        	int columnCount = rsmd.getColumnCount();
@@ -294,20 +347,20 @@ public class FinalProject{
 	        	
 	        	
 	        	for(int i = 0; i < numItems; i++) {
-	        		System.out.println("Enter item " + (i+1) + "'s model number: ");
-	        		String modelNum = scan.nextLine();
+	        		System.out.println("Enter item " + (i+1) + "'s serial number: ");
+	        		String serialNum = scan.nextLine();
 	        		
-	        		String findItem = "SELECT Stock.serialNum FROM Stock, Contains WHERE Contains.serialNum = Stock.serialNum "
-	        				+ "AND Stock.modelNum = " + modelNum + " AND Contains.rentalNum = " + rentalID + ";";
-	        		Statement returnItem = conn.createStatement();
-	        		ResultSet rs1 = returnItem.executeQuery(findItem);
-	        		while(rs1.next()) {
-	        			String serialNum = rs1.getString(6);
-	        			String updateString = "UPDATE Stock SET Status = 'WAREHOUSE' WHERE serialNum = '" + serialNum +"';";
-	        			Statement updateStmt = conn.createStatement();
-	        			updateStmt.executeUpdate(updateString);
-	        		}
+	        		String updateString = "UPDATE Stock SET Status = 'WAREHOUSE' WHERE SerialNum = '" + serialNum +"';";
+        			Statement updateStmt = conn.createStatement();
+        			int result = updateStmt.executeUpdate(updateString);
+        			if(result == 1) {
+        				System.out.println("Item was marked for return. A drone will soon be assigned to pick it up.");
+        			} else {
+        				System.out.println("Error adding item to return.");
+        			}
+	        		
 	        	}
+	        	System.out.println("Return order complete.");
 				
 				
 			}
@@ -318,7 +371,7 @@ public class FinalProject{
 	
 	public static void rentEquipment(Connection conn, Scanner scan) {
 		
-		
+		try {
 		System.out.println("How many items would you like to rent?");
 		int numRentals = scan.nextInt();
 		
@@ -328,35 +381,48 @@ public class FinalProject{
 		System.out.println("Enter userID of member that is renting: ");
 		int userID = scan.nextInt();
 		
+		System.out.println("Enter the ID of the employee to fulfill this rental: ");
+		int empID = scan.nextInt();
+		
 		String eatNewLine = scan.nextLine();
 		
-		//for however many items they want to rent, call process rental
+		System.out.println("Enter today's date (YYYY-MM-DD): ");
+		String date1 = scan.nextLine();
+		
+		System.out.println("Enter due date (YYYY-MM-DD): ");
+		String date2 = scan.nextLine();
+		
+		System.out.println("Enter fees: ");
+		double fees = scan.nextDouble();
+		
+		//add the item to the rental table
+		String addRentalString = "INSERT INTO Rental(rentalNum, checkOut, dueDate, Fees, userID, empID)";
+		addRentalString += " VALUES(?,?,?,?,?,?);";
+		//NOTE: the drone attributes are left as NULL, to be handled by check out / pick up
+		
+		PreparedStatement addRental = conn.prepareStatement(addRentalString);
+		addRental.setInt(1, rentalNum);
+		addRental.setString(2, date1);
+		addRental.setString(3, date2);
+		addRental.setDouble(4, fees);
+		addRental.setInt(5, userID);
+		addRental.setInt(6, empID);
+		
+		String eatNewLine2 = scan.nextLine();
+		
+		int numItems = 0;
+		
+		
+		//for however many items they want to rent and to contains
 		for(int i = 0; i < numRentals; i++) {
 			System.out.println("Enter the serial number of Item " + (i+1) + ": ");
-			String currentItem = scan.nextLine();
+			String serialNum = scan.nextLine();
 			
-			processRental(conn, scan, userID, rentalNum, currentItem);
-			
-		}
-		
-	}
-	
-	public static void processRental(Connection conn, Scanner scan, int userID, int rentalNum, String serialNum) {
-		
-		try {
 			//update status of stock to IN USE
-			String status = "UPDATE Stock SET currentLoc = 'IN USE' WHERE serialNum = '" + serialNum + "';";
+			String status = "UPDATE Stock SET Status = 'IN USE' WHERE SerialNum = '" + serialNum + "';";
 			Statement updateStatus = conn.createStatement();
 			updateStatus.executeUpdate(status);
 			
-			//add the item to the rental table
-			String addRentalString = "INSERT INTO Rental(rentalNum, checkOut, dueDate, Item, Fees, userID, empID)";
-			addRentalString += " VALUES(?,?,?,?,?,?,?);";
-			//NOTE: the drone attributes are left as NULL, to be handled by check out / pick up
-			
-			PreparedStatement addRental = conn.prepareStatement(addRentalString);
-			
-			//not only do you need to add to Rental, but also Contains
 			String addContainsString = "INSERT INTO Contains(serialNum, rentalNum) VALUES(?, ?);";
 			PreparedStatement addContains = conn.prepareStatement(addContainsString);
 			
@@ -364,52 +430,29 @@ public class FinalProject{
 			addContains.setInt(2, rentalNum);
 			
 			//now we're ready to add to Contains table
-			addContains.executeUpdate();
+			numItems += addContains.executeUpdate();
 			
 			
-			//next, set up the new rental item
-			addRental.setInt(1, rentalNum);
-			
-			
-			System.out.println("Enter today's date (YYYY-MM-DD): ");
-			addRental.setString(2, scan.nextLine());
-			
-			System.out.println("Enter rental due date (YYYY-MM-DD): ");
-			addRental.setString(3, scan.nextLine());
-			
-			//to get item (model number), need to look at Stock table
-			String findModel = "SELECT modelNum FROM Stock WHERE serialNum = '" + serialNum + "';";
-			Statement findModelNum = conn.createStatement();
-			ResultSet rs = findModelNum.executeQuery(findModel);
-			String modelNum = rs.getString(1);
-			addRental.setString(4, modelNum);
-			
-			System.out.println("Enter rental fees: ");
-			double fees = scan.nextDouble();
-			addRental.setDouble(5, fees);
-			
-			//we already have userID from other method
-			addRental.setInt(6, userID);
-			
-			System.out.println("Enter the ID of the employee to fulfill this order: ");
-			int empID = scan.nextInt();
-			addRental.setInt(7, empID);
-			
-			String eatNewLine = scan.nextLine();
-			
-			//now, we can execute the prepared statement
-			addRental.executeUpdate();
-			
-			
+		}
+		
+		int result = addRental.executeUpdate();
+		if(result == 1 && numItems > 0) {
+			System.out.println("Successfully created rental! " + numItems + " item(s) are in the order.");
+		} else {
+			System.out.println("Error creating rental.");
+		}
+		
+		System.out.println("Rental order placed. A drone will soon be assigned to drone it off.");
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 		}
-		
-		
 	}
 	
+	
 	public static void displayRentals(Connection conn) {
-		String selectString = "SELECT rentalNum, checkOut, dueDate, Item FROM Rental;";
+		System.out.println("RENTALS IN USE: ");
+		String selectString = "SELECT Rental.rentalNum, Rental.checkOut, Rental.dueDate, Stock.SerialNum, Stock.modelNum FROM Rental, Contains, Stock"
+				+ " WHERE Contains.serialNum = Stock.SerialNum AND Contains.rentalNum = Rental.rentalNum AND Stock.Status = 'IN USE' AND Rental.dropDrone IS NOT NULL;";
 		try {
 			Statement selectStmt = conn.createStatement();
 			
@@ -430,6 +473,7 @@ public class FinalProject{
         		}
     			System.out.print("\n");
         	}
+        
 			
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
